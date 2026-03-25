@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Negociação IPTU</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: #f5f3ef;
+    color: #1a1917;
+    min-height: 100vh;
+    padding: 40px 24px 60px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .page {
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Header */
+  .header {
+    background: #1a1917;
+    color: #f5f3ef;
+    border-radius: 20px;
+    padding: 28px 28px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    background: #c8f566;
+    border-radius: 50%;
+    opacity: 0.12;
+  }
+  .header-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #c8f566;
+    margin-bottom: 10px;
+  }
+  .header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  .header p {
+    font-size: 13px;
+    color: #a09e97;
+    font-weight: 400;
+  }
+  .badge-negociado {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #c8f566;
+    color: #1a1917;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-top: 14px;
+  }
+  .badge-negociado::before {
+    content: '✓';
+    font-size: 10px;
+  }
+
+  /* Destaques */
+  .destaques {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .destaque {
+    border-radius: 16px;
+    padding: 20px 18px;
+  }
+  .destaque.economia {
+    background: #c8f566;
+    color: #1a1917;
+  }
+  .destaque.mensal {
+    background: #1a1917;
+    color: #f5f3ef;
+  }
+  .destaque-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.65;
+    margin-bottom: 8px;
+  }
+  .destaque-valor {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .destaque-sub {
+    font-size: 10px;
+    opacity: 0.6;
+    line-height: 1.4;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* Cards dos anos */
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid #e8e5df;
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+  .card-ano {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1917;
+  }
+  .badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.02em;
+  }
+  .badge-desconto { background: #e8f9d4; color: #3a6e10; }
+  .badge-parcela  { background: #fff3e0; color: #7a4800; }
+  .badge-atual    { background: #e3f0fc; color: #1a5fa8; }
+
+  .divider { border: none; border-top: 1px solid #f0ede7; margin: 10px 0; }
+
+  .row-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    padding: 5px 0;
+  }
+  .row-info .lbl { color: #7a786f; }
+  .row-info .val { font-weight: 600; }
+  .val-riscado { text-decoration: line-through; color: #b0ae a8; font-weight: 400; }
+  .val-verde { color: #3a6e10; }
+
+  .parcelas-wrap {
+    margin-top: 12px;
+  }
+  .parcelas-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #a09e97;
+    margin-bottom: 7px;
+  }
+  .pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .pill {
+    background: #f5f3ef;
+    border: 1px solid #e8e5df;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 11px;
+    color: #4a4842;
+    font-family: 'DM Mono', monospace;
+  }
+  .pill.entrada {
+    background: #1a1917;
+    color: #f5f3ef;
+    border-color: #1a1917;
+  }
+
+  .card-total {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #f0ede7;
+    font-size: 11px;
+    color: #a09e97;
+    font-family: 'DM Mono', monospace;
+  }
+  .card-total strong { color: #1a1917; }
+
+  /* Resumo */
+  .resumo {
+    background: #1a1917;
+    color: #f5f3ef;
+    border-radius: 20px;
+    padding: 24px;
+  }
+  .resumo-title {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #a09e97;
+    margin-bottom: 18px;
+  }
+  .resumo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr 1px 1fr;
+    gap: 0;
+    text-align: center;
+  }
+  .resumo-item {}
+  .resumo-separator {
+    background: #2e2c29;
+    align-self: stretch;
+    margin: 0 4px;
+  }
+  .resumo-num {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 5px;
+  }
+  .resumo-num.verde { color: #c8f566; }
+  .resumo-sub {
+    font-size: 10px;
+    color: #7a786f;
+    line-height: 1.4;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    font-size: 10px;
+    color: #b0ae a8;
+    font-family: 'DM Mono', monospace;
+    color: #a09e97;
+    line-height: 1.6;
+    padding: 0 8px;
+  }
+
+  @media print {
+    body { background: #fff; padding: 20px; }
+    .page { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <p class="header-tag">Prefeitura · IPTU</p>
+    <h1>Negociação<br>de IPTU</h1>
+    <p>4 anos acertados: 2023, 2024, 2025 e 2026</p>
+    <div class="badge-negociado">Negociado com sucesso</div>
+  </div>
+
+  <!-- Destaques -->
+  <div class="destaques">
+    <div class="destaque economia">
+      <p class="destaque-label">Economia</p>
+      <p class="destaque-valor">R$ 241,10</p>
+      <p class="destaque-sub">2023+2024 saíram de R$&nbsp;1.074 para R$&nbsp;832,90</p>
+    </div>
+    <div class="destaque mensal">
+      <p class="destaque-label">Por mês</p>
+      <p class="destaque-valor">R$ 268,46</p>
+      <p class="destaque-sub">103,27 + 94,28 + 70,91<br>(sem entradas)</p>
+    </div>
+  </div>
+
+  <!-- 2023 + 2024 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-ano">2023 + 2024</span>
+      <span class="badge badge-desconto">Desconto obtido</span>
+    </div>
+    <div class="row-info">
+      <span class="lbl">Valor original</span>
+      <span class="val val-riscado">R$ 1.074,00</span>
+    </div>
+    <div class="row-info">
+      <span class="lbl">Valor negociado</span>
+      <span class="val val-verde">R$ 832,90</span>
+    </div>
+    <div class="parcelas-wrap">
+      <p class="parcelas-label">Forma de pagamento</p>
+      <div class="pills">
+        <span class="pill entrada">Entrada R$ 110,01</span>
+        <span class="pill">7× R$ 103,27</span>
+      </div>
+    </div>
+    <p class="card-total">R$ 110,01 + 7 × R$ 103,27 = <strong>R$ 832,90</strong></p>
+  </div>
+
+  <!-- 2025 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-ano">2025</span>
+      <span class="badge badge-parcela">Parcelado sem desconto</span>
+    </div>
+    <div class="row-info">
+      <span class="lbl">Valor total</span>
+      <span class="val">R$ 646,52</span>
+    </div>
+    <div class="row-info">
+      <span class="lbl">Desconto</span>
+      <span class="val" style="color:#a09e97;font-weight:400;">Não obtido</span>
+    </div>
+    <div class="parcelas-wrap">
+      <p class="parcelas-label">Forma de pagamento</p>
+      <div class="pills">
+        <span class="pill entrada">Entrada R$ 80,84</span>
+        <span class="pill">6× R$ 94,28</span>
+      </div>
+    </div>
+    <p class="card-total">R$ 80,84 + 6 × R$ 94,28 = <strong>R$ 646,52</strong></p>
+  </div>
+
+  <!-- 2026 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-ano">2026</span>
+      <span class="badge badge-atual">Ano atual — parcelado</span>
+    </div>
+    <div class="row-info">
+      <span class="lbl">Valor total</span>
+      <span class="val">R$ 425,43</span>
+    </div>
+    <div class="row-info">
+      <span class="lbl">Desconto</span>
+      <span class="val" style="color:#a09e97;font-weight:400;">Não se aplica</span>
+    </div>
+    <div class="parcelas-wrap">
+      <p class="parcelas-label">Forma de pagamento</p>
+      <div class="pills">
+        <span class="pill entrada">Entrada R$ 70,88</span>
+        <span class="pill">5× R$ 70,91</span>
+      </div>
+    </div>
+    <p class="card-total">R$ 70,88 + 5 × R$ 70,91 = <strong>R$ 425,43</strong></p>
+  </div>
+
+  <!-- Resumo -->
+  <div class="resumo">
+    <p class="resumo-title">Resumo geral</p>
+    <div class="resumo-grid">
+      <div class="resumo-item">
+        <p class="resumo-num">R$&nbsp;1.904,85</p>
+        <p class="resumo-sub">Total a pagar</p>
+      </div>
+      <div class="resumo-separator"></div>
+      <div class="resumo-item">
+        <p class="resumo-num verde">R$&nbsp;241,10</p>
+        <p class="resumo-sub">Economia obtida</p>
+      </div>
+      <div class="resumo-separator"></div>
+      <div class="resumo-item">
+        <p class="resumo-num">7 meses</p>
+        <p class="resumo-sub">Duração do<br>maior acordo</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <p class="footer">
+    Parcela mensal = R$103,27 + R$94,28 + R$70,91 = R$268,46<br>
+    Entradas pagas separadamente · Valores conforme negociação
+  </p>
+
+</div>
+</body>
+</html>
